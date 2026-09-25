@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interpelli — Firenze / Prato</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --border: #dfe3e8;
+    --text: #1b1f24;
+    --muted: #5c6672;
+    --accent: #2f6feb;
+    --accent-soft: #e8f0fe;
+    --new: #b4541b;
+    --new-soft: #fdf0e6;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d;
+      --surface: #1e2127;
+      --border: #313640;
+      --text: #e7e9ec;
+      --muted: #9aa4b2;
+      --accent: #6f9cf5;
+      --accent-soft: #23304a;
+      --new: #e9a877;
+      --new-soft: #3a2b1d;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px 16px 64px;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+
+  /* ---------- pannello configurazione ---------- */
+  details.config {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+  }
+  details.config > summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+  }
+  .config-body { padding: 0 16px 16px; display: grid; gap: 12px; }
+  label.field { display: block; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  input[type=text], textarea {
+    width: 100%;
+    margin-top: 4px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+  }
+  textarea { resize: vertical; min-height: 54px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); }
+  button {
+    font: inherit;
+    font-size: 14px;
+    padding: 9px 16px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.primary:disabled { opacity: .55; cursor: default; }
+  button.link { border: none; background: none; color: var(--accent); padding: 0; font-size: 12px; text-decoration: underline; }
+
+  /* ---------- riepilogo ---------- */
+  .summary { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    min-width: 96px;
+  }
+  .stat b { display: block; font-size: 20px; line-height: 1.2; }
+  .stat span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+  /* ---------- tab ---------- */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .tab {
+    border: none;
+    background: none;
+    padding: 10px 16px;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-weight: 600;
+    border-radius: 0;
+  }
+  .tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab .count {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+  }
+  .toolbar { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+  .toolbar input { max-width: 280px; margin: 0; }
+
+  /* ---------- card ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 15px; line-height: 1.4; }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    letter-spacing: .02em;
+  }
+  .badge.new { background: var(--new-soft); color: var(--new); }
+  .badge.plain { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .modalita { font-size: 13px; color: var(--muted); margin: 8px 0; white-space: pre-wrap; word-break: break-word; }
+  .links { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; }
+  .links a { color: var(--accent); word-break: break-all; }
+  .empty, .error, .loading { padding: 32px 16px; text-align: center; color: var(--muted); }
+  .error { color: #c0392b; white-space: pre-wrap; }
+  .notice {
+    background: var(--new-soft);
+    border: 1px solid var(--new);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .notice pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 8px 0;
+    overflow-x: auto;
+    font-size: 12px;
+  }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+  input:disabled, button:disabled { opacity: .55; cursor: default; }
+
+  /* ---------- schermi stretti (il file viene letto anche da telefono) ---------- */
+  @media (max-width: 560px) {
+    body { padding: 16px 12px 48px; }
+    h1 { font-size: 19px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar input { max-width: none; }
+    .tabs { overflow-x: auto; }
+    .tab { padding: 10px 12px; white-space: nowrap; }
+    .stat { flex: 1 1 calc(50% - 10px); min-width: 0; }
+    .links { flex-direction: column; gap: 6px; }
+  }
+
+  /* ---------- legenda CdC ---------- */
+  .legend {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font-size: 13px;
+  }
+  .legend .legend-title {
+    width: 100%;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+  }
+  .legend .entry { display: flex; align-items: center; gap: 6px; }
+  .badge[title] { cursor: help; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Interpelli MAD</h1>
+  <p class="sub">
+    POST <code>ab0hedk0r4.execute-api.eu-south-1.amazonaws.com/mad/GetInterpelli</code> —
+    risultati divisi per provincia.
+  </p>
+
+  <details class="config">
+    <summary>Parametri della richiesta</summary>
+    <div class="config-body">
+      <div>
+        <label class="field" for="cdc">CdC da filtrare (separate da virgola)</label>
+        <input type="text" id="cdc" value="AD0J, AD0D, 00EE, 00AA">
+      </div>
+      <div>
+        <label class="field" for="province">Province da filtrare (una tab per provincia)</label>
+        <input type="text" id="province" value="FIRENZE, PRATO">
+      </div>
+      <div>
+        <label class="field" for="ua">userAgent</label>
+        <textarea id="ua"></textarea>
+        <button class="link" type="button" id="ua-browser">usa lo userAgent reale del browser</button>
+      </div>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="solo-nuovi" checked> SoloNuovi</label>
+        <label class="check"><input type="checkbox" id="all-pages" checked> Carica tutte le pagine</label>
+      </div>
+    </div>
+  </details>
+
+  <div class="row" style="margin-bottom:20px">
+    <button class="primary" id="load">Carica interpelli</button>
+    <span id="status" class="sub" style="margin:0"></span>
+  </div>
+
+  <div class="notice" id="file-warning" hidden>
+    <b>Questa pagina va aperta da un indirizzo web, non come file.</b>
+    L'API concede il CORS a qualsiasi origin <code>http://</code> o <code>https://</code>,
+    ma non all'origin <code>null</code> che il browser invia quando la pagina è aperta da
+    disco: da <code>file://</code> la richiesta viene sempre bloccata, su qualsiasi
+    computer o telefono. Pubblica questo file su un hosting statico e aprilo dal suo URL.
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="summary" id="summary" hidden></div>
+
+  <div id="results" hidden>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="toolbar">
+      <input type="text" id="search" placeholder="Filtra per titolo, CdC, modalità…">
+      <span class="sub" id="shown" style="margin:0"></span>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div class="loading" id="loading" hidden>Caricamento in corso…</div>
+  <div class="error" id="error" hidden></div>
+</div>
+
+<script>
+"use strict";
+
+const ENDPOINT = "https://ab0hedk0r4.execute-api.eu-south-1.amazonaws.com/mad/GetInterpelli";
+const DEFAULT_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36";
+// Guardia contro loop infiniti. Con filtri larghi il totale supera il migliaio
+// (24 elementi per pagina), quindi il limite è alto ma il troncamento va segnalato.
+const MAX_PAGES = 60;
+
+// Classi di concorso note. I codici non presenti qui vengono mostrati così come arrivano.
+const CDC_LABELS = {
+  "AD0J": "Sostegno scuola primaria",
+  "AD0D": "Sostegno scuola infanzia",
+  "00EE": "Scuola primaria posto comune",
+  "00AA": "Infanzia posto comune",
+};
+
+const el = (id) => document.getElementById(id);
+const state = { items: [], provinces: [], active: null, resoconto: null };
+
+// Da file:// il browser invia "Origin: null", a cui l'API non concede il CORS.
+const SERVED_OVER_HTTP = location.protocol === "http:" || location.protocol === "https:";
+
+el("ua").value = DEFAULT_UA;
+el("ua-browser").addEventListener("click", () => { el("ua").value = navigator.userAgent; });
+el("load").addEventListener("click", load);
+el("search").addEventListener("input", renderList);
+el("file-warning").hidden = SERVED_OVER_HTTP;
+renderLegend();
+if (SERVED_OVER_HTTP) load(); // servita via web: mostra subito gli interpelli
+
+/** Il campo Cdc può contenere più codici separati da virgola. */
+function cdcCodes(it) {
+  return String(it.Cdc || "").split(",").map((c) => c.trim()).filter(Boolean);
+}
+
+function renderLegend() {
+  const entries = Object.entries(CDC_LABELS)
+    .map(([code, label]) =>
+      `<span class="entry"><span class="badge plain">${escapeHtml(code)}</span>${escapeHtml(label)}</span>`)
+    .join("");
+  el("legend").innerHTML = `<span class="legend-title">Legenda classi di concorso</span>${entries}`;
+}
+
+/** Legge i parametri dal pannello di configurazione. */
+function readConfig() {
+  const split = (s) => s.split(",").map((v) => v.trim()).filter(Boolean);
+  return {
+    cdc: split(el("cdc").value),
+    province: split(el("province").value).map((p) => p.toUpperCase()),
+    userAgent: el("ua").value.trim() || navigator.userAgent,
+    soloNuovi: el("solo-nuovi").checked,
+    allPages: el("all-pages").checked,
+  };
+}
+
+/** Esegue una singola POST per la pagina richiesta. */
+async function fetchPage(cfg, page) {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "getinterpelli",
+      page: page,
+      SoloNuovi: cfg.soloNuovi,
+      CdcPerFiltrare: cfg.cdc,
+      ProvincePerFiltrare: cfg.province,
+      userAgent: cfg.userAgent,
+    }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status + " " + res.statusText);
+  // L'API risponde con content-type text/plain, quindi il body va parsato a mano.
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error("Risposta non JSON:\n" + text.slice(0, 500));
+  }
+}
+
+/** Scarica tutte le pagine e aggiorna lo stato. */
+async function load() {
+  const cfg = readConfig();
+  if (cfg.province.length === 0) {
+    showError("Indica almeno una provincia.");
+    return;
+  }
+
+  el("load").disabled = true;
+  el("error").hidden = true;
+  el("results").hidden = true;
+  el("summary").hidden = true;
+  el("loading").hidden = false;
+  el("status").textContent = "";
+
+  try {
+    const seen = new Set();
+    const items = [];
+    let total = Infinity;
+    let resoconto = null;
+
+    let truncated = false;
+
+    for (let page = 0; page < MAX_PAGES; page++) {
+      el("loading").textContent = "Caricamento pagina " + (page + 1) +
+        (isFinite(total) ? " di ~" + Math.ceil(total / 24) : "") + "…";
+      const data = await fetchPage(cfg, page);
+      const dati = (data && data.Interpelli && data.Interpelli.Dati) || [];
+      resoconto = data.ResocontoInterpelli || resoconto;
+      if (typeof data.quanti_interpelli === "number") total = data.quanti_interpelli;
+
+      for (const it of dati) {
+        const key = it.ID || JSON.stringify(it);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push(it);
+      }
+
+      if (dati.length === 0 || !cfg.allPages || items.length >= total) break;
+      if (page === MAX_PAGES - 1) truncated = true;
+    }
+
+    showData(items, total, resoconto, cfg.province);
+    el("status").textContent = items.length + " interpelli caricati" +
+      (truncated ? ` — fermato a ${MAX_PAGES} pagine su ${total} totali, restringi i filtri` : "");
+  } catch (err) {
+    // Una fetch bloccata dal CORS arriva qui come TypeError senza dettagli.
+    const hint = !SERVED_OVER_HTTP
+      ? "\n\nLa pagina è aperta da " + location.protocol + " — servila via HTTP (vedi il riquadro in alto)."
+      : "";
+    showError((err.message || String(err)) + hint);
+  } finally {
+    el("loading").hidden = true;
+    el("loading").textContent = "Caricamento in corso…";
+    el("load").disabled = false;
+  }
+}
+
+function showData(items, total, resoconto, province) {
+  state.items = items;
+  state.provinces = province.slice();
+  // Eventuali province non richieste finiscono in una tab di servizio.
+  const extra = items.some((it) => !province.includes(String(it.Provincia || "").toUpperCase()));
+  if (extra) state.provinces.push("ALTRE");
+  state.active = state.provinces[0];
+  state.resoconto = resoconto;
+
+  renderSummary(total);
+  renderTabs();
+  renderList();
+  el("results").hidden = false;
+}
+
+function showError(msg) {
+  el("error").textContent = "Errore: " + msg;
+  el("error").hidden = false;
+}
+
+/** Interpelli appartenenti alla tab indicata, ordinati per data decrescente. */
+function itemsFor(province) {
+  const known = state.provinces.filter((p) => p !== "ALTRE");
+  const list = state.items.filter((it) => {
+    const p = String(it.Provincia || "").toUpperCase();
+    return province === "ALTRE" ? !known.includes(p) : p === province;
+  });
+  return list.sort((a, b) => String(b.Data || "").localeCompare(String(a.Data || "")));
+}
+
+function renderSummary(total) {
+  const r = state.resoconto || {};
+  const cells = [
+    ["Totali", typeof total === "number" && isFinite(total) ? total : state.items.length],
+    ["Caricati", state.items.length],
+    ["Oggi", r.Oggi],
+    ["Settimana", r.Settimana],
+  ].filter(([, v]) => v !== undefined && v !== null);
+
+  el("summary").innerHTML = cells
+    .map(([label, value]) => `<div class="stat"><b>${value}</b><span>${label}</span></div>`)
+    .join("");
+  el("summary").hidden = false;
+}
+
+function renderTabs() {
+  el("tabs").innerHTML = state.provinces
+    .map((p) => {
+      const selected = p === state.active;
+      return `<button class="tab" role="tab" data-province="${escapeAttr(p)}" aria-selected="${selected}">` +
+        `${escapeHtml(titleCase(p))}<span class="count">${itemsFor(p).length}</span></button>`;
+    })
+    .join("");
+
+  for (const btn of el("tabs").querySelectorAll(".tab")) {
+    btn.addEventListener("click", () => {
+      state.active = btn.dataset.province;
+      renderTabs();
+      renderList();
+    });
+  }
+}
+
+function renderList() {
+  const q = el("search").value.trim().toLowerCase();
+  let list = itemsFor(state.active);
+  if (q) {
+    list = list.filter((it) => {
+      // Cerca anche nelle descrizioni della legenda: "sostegno" trova gli AD0J/AD0D.
+      const labels = cdcCodes(it).map((c) => CDC_LABELS[c.toUpperCase()] || "");
+      return [it.Titolo, it.Cdc, it.Modalita, it.DataPubblicazione, ...labels]
+        .map((v) => String(v || "").toLowerCase())
+        .some((v) => v.includes(q));
+    });
+  }
+
+  el("shown").textContent = q ? list.length + " di " + itemsFor(state.active).length : "";
+  el("list").innerHTML = list.length
+    ? list.map(card).join("")
+    : `<div class="empty">Nessun interpello per ${escapeHtml(titleCase(state.active))}.</div>`;
+}
+
+function card(it) {
+  const badges = [];
+  if (it.New) badges.push(`<span class="badge new">NUOVO</span>`);
+  if (it.Oggi) badges.push(`<span class="badge">OGGI</span>`);
+  else if (it.Settimana) badges.push(`<span class="badge">QUESTA SETTIMANA</span>`);
+  for (const code of cdcCodes(it)) {
+    const label = CDC_LABELS[code.toUpperCase()];
+    badges.push(`<span class="badge plain"${label ? ` title="${escapeAttr(label)}"` : ""}>${escapeHtml(code)}</span>`);
+  }
+  if (it.DataPubblicazione) badges.push(`<span class="badge plain">${escapeHtml(it.DataPubblicazione)}</span>`);
+  if (it.GeoRef) badges.push(`<span class="badge plain">fonte: ${escapeHtml(it.GeoRef)}</span>`);
+
+  const links = [];
+  (it.Link || []).forEach((href, i) => links.push(anchor(href, "Allegato" + ((it.Link || []).length > 1 ? " " + (i + 1) : ""))));
+  if (it.secondpage) links.push(anchor(it.secondpage, "Pagina dell'avviso"));
+  if (it.fonte) links.push(anchor(it.fonte, "Portale"));
+
+  return `<article class="card">
+    <h3>${escapeHtml(it.Titolo || "(senza titolo)")}</h3>
+    <div class="badges">${badges.join("")}</div>
+    ${it.Modalita ? `<div class="modalita">${escapeHtml(it.Modalita)}</div>` : ""}
+    <div class="links">${links.join("")}</div>
+  </article>`;
+}
+
+function anchor(href, label) {
+  const safe = String(href || "");
+  if (!/^https?:\/\//i.test(safe)) return "";
+  return `<a href="${escapeAttr(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+}
+
+function titleCase(s) {
+  return String(s).charAt(0) + String(s).slice(1).toLowerCase();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+const escapeAttr = escapeHtml;
+</script>
+</body>
+</html>
